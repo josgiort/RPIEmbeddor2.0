@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VSCode / PyCharm
+.vscode/
+.idea/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+slurm-*.out
+slurm-*.err
+
+# Data (ignore raw datasets)
+data/
+datasets/
+*.csv
+*.tsv
+*.h5
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.tar.gz
+*.zip
+*.parquet
+
+# Checkpoints & outputs
+checkpoints/
+outputs/
+lightning_logs/
+
+# Temporary
+*.tmp
+*.bak
+.DS_Store
