@@ -5,8 +5,11 @@
 conda create -n rpi python=3.8 pip
 pip install -r requirements.txt
 ```
-NEW VERSION UNDER DEVELOPMENT
-```
+# NEW VERSION UNDER DEVELOPMENT
+
+<img width="1024" height="1536" alt="image_rpiembeddor" src="https://github.com/user-attachments/assets/19becc2b-80f8-49ef-a652-16ad24ed8c6d" />
+
+
 ## Infer RPIembeddor
 ```
 python src/inference.py
