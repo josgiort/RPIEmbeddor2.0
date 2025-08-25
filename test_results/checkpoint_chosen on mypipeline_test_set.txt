@@ -1,7 +1,0 @@
-test_loss: 0.4427492022514343
-test_BinaryPrecision: 0.215130016207695
-test_BinaryRecall: 0.37218815088272095
-test_BinaryF1Score: 0.27265918254852295
-test_BinaryAccuracy: 0.5100358724594116
-test_BinaryAUROC: 0.4930039644241333
-test_loss_epoch: 0.6595861911773682
