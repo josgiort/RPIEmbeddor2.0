@@ -1,0 +1,178 @@
+import sys
+import argparse
+
+import lightning.pytorch.loggers
+
+from pathlib import Path
+
+from lightning import Trainer
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+# Strategy needed to train on two gpus
+#from lightning.pytorch.strategies import DDPStrategy
+#
+src_dir = Path.cwd().parent
+sys.path.append(str(src_dir))
+from model import RNAProteinInterAct, RNAProteinInterActSE, ModelWrapper, BaseCNN
+from dataloader import get_dataloader, get_dataloader_subset
+
+
+def main(args):
+    
+    # Choose model based on embedding strategy
+    if args.baseline:
+        rpi_model = BaseCNN(
+            device="cuda" if args.accelerator == "gpu" else "cpu",
+        )
+    else:
+        if args.one_hot_encoding:
+            model = RNAProteinInterActSE
+        else:
+            model = RNAProteinInterAct
+
+        # Initialize model
+        rpi_model = model( 
+            batch_first=True,
+            embed_dim=640,
+            d_model=args.d_model,
+            num_encoder_layers=args.num_encoder_layers,
+            nhead=args.n_head,
+            dim_feedforward=args.dim_feedforward,
+            key_padding_mask=args.key_padding_mask,
+            norm_first=True,
+            dropout=args.dropout
+        )
+    
+    # Wrap model in a LightningModule
+    lightning_module = ModelWrapper(
+        rpi_model,
+        lr_init=args.lr_init,
+        weight_decay=args.weight_decay,
+        t_max=args.max_epochs,
+        warmup_steps = args.warmup_steps,
+        seed=args.seed,
+        #cpr=args.cpr
+    )
+    
+    full_exp_name = f"{args.wandb_run_name}, lr: {args.lr_init}, \
+            wd: {args.weight_decay}, dr: {args.dropout}, seed: {args.seed}"
+    
+    # Initialize logger
+    if args.wandb:
+        logger = lightning.pytorch.loggers.WandbLogger(
+            project="rpi-iclr",
+            name=full_exp_name,
+            group=args.wandb_group
+        )
+    else:
+        logger = True
+
+    # Initialize checkpoint callback to save best models        
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=args.checkpoints_dir,  # Custom path for saving checkpoints
+        filename='{epoch}-' + full_exp_name,  # Filename format
+        monitor='train_loss',  # Metric to monitor for best models
+        mode='min',  # Mode for the monitored metric, 'min' for minimization
+        save_last=True,  # Save the last checkpoint in addition to the best ones
+        every_n_epochs=args.freq_save_ckpt, # Save the checkpoints every n epochs to allow resuming training from a given epoch (New argument)
+    )
+    checkpoint_callback.CHECKPOINT_NAME_LAST = "last-" + args.wandb_group + "_" + full_exp_name
+
+    lr_monitor = LearningRateMonitor(logging_interval='step')
+
+    # Initialize trainer 
+    trainer = Trainer(
+        # this line is the strategy only to work with two gpus
+        #strategy=DDPStrategy(find_unused_parameters=True),
+        #
+        accelerator=args.accelerator,
+        devices=args.devices,
+        max_epochs=args.max_epochs,
+        logger=logger,
+        log_every_n_steps=1,
+        deterministic=True, # Added determinism for debugging
+        callbacks=[lr_monitor, checkpoint_callback]
+    )
+
+
+
+    
+    # Get train dataloader (val is redundant outside of HPO experiments)
+    # train_dataloader = get_dataloader(  
+    #     loader_type=args.loader_type,
+    #     dataset_path=args.train_set_path,
+    #     rna_embeddings_path=args.rna_embeddings_path,
+    #     protein_embeddings_path=args.protein_embeddings_path,
+    #     seed=args.seed,
+    #     num_workers=args.num_dataloader_workers,
+    #     batch_size=args.batch_size
+    # )
+
+    train_dataloader_subset = get_dataloader_subset(  
+        loader_type=args.loader_type,
+        dataset_path=args.train_set_path,
+        rna_embeddings_path=args.rna_embeddings_path,
+        protein_embeddings_path=args.protein_embeddings_path,
+        seed=args.seed,
+        num_workers=args.num_dataloader_workers,
+        batch_size=args.batch_size
+    )
+
+    for i, batch in enumerate(train_dataloader_subset):
+        x_rna, x_pro, y, row_num = batch
+        print(y[:20])
+        break
+
+    # Train model
+    trainer.fit(model=lightning_module, train_dataloaders=train_dataloader_subset)
+
+    # Test generalization after the fit
+    test_dataloader = get_dataloader(
+    loader_type=args.loader_type,
+    dataset_path="data/interactions/test_set.parquet",
+    rna_embeddings_path=args.rna_embeddings_path,
+    protein_embeddings_path=args.protein_embeddings_path,
+    seed=args.seed,
+    num_workers=args.num_dataloader_workers,
+    batch_size=args.batch_size,
+    shuffle=False
+)
+    trainer.test(model=lightning_module, dataloaders=test_dataloader)
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description="Command line options for the script")
+
+    parser.add_argument("--accelerator", default='cuda', help="Type of accelerator")
+    parser.add_argument("--devices", type=int, default=1, help="Number of devices")
+    parser.add_argument("--wandb", action='store_true', default=False, help="Enables logging via wandb")
+    parser.add_argument("--wandb_run_name", default="default", help="Name of the wandb run")
+    parser.add_argument("--wandb_group", default="default", help="Name of the wandb group")
+
+    parser.add_argument("--baseline", action='store_true', default=False, help="Runs baseline CNN model")
+    parser.add_argument("--one_hot_encoding", action='store_true', default=False, help="Enables one-hot encoding")
+    parser.add_argument("--num_encoder_layers", type=int, default=1, help="Number of encoder layers")
+    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
+    parser.add_argument("--d_model", type=int, default=256, help="Dimension of model")
+    parser.add_argument("--n_head", type=int, default=2, help="Number of heads")
+    parser.add_argument("--dim_feedforward", type=int, default=20, help="Dimension of feedforward network")
+    parser.add_argument("--dropout", type=float, default=0.0, help="Dropout rate")
+    parser.add_argument("--weight_decay", type=float, default=0.0, help="Weight decay")
+    parser.add_argument("--key_padding_mask", action='store_true', default=False, help="Enables key padding mask")
+    parser.add_argument("--lr_init", type=float, default=0.001, help="Initial learning rate")
+    parser.add_argument("--loader_type", default="RPIDataset", help="Type of dataloader")
+    
+    parser.add_argument("--cpr", action='store_true', default=False, help="Sets AdamCPR as optimizer") 
+    parser.add_argument("--warmup_steps", type=int, default=1000, help="Number of warmup steps")
+    parser.add_argument("--max_epochs", type=int, default=0, required=True, help="Maximum number of epochs")
+    parser.add_argument("--num_dataloader_workers", type=int, default=8, help="Number of dataloader workers")
+    parser.add_argument("--protein_embeddings_path", default="data/embeddings/protein_embeddings.npy", help="Path to protein embeddings")
+    parser.add_argument("--rna_embeddings_path", default="data/embeddings/rna_embeddings.npy", help="Path to RNA embeddings")
+    parser.add_argument("--train_set_path", default="data/interactions/train_set.parquet", help="Path to the train set file")
+    parser.add_argument("--seed", type=int, default=0, help="Seed for reproducibility")
+    parser.add_argument("--checkpoints_dir", default="checkpoints", help="Path to the checkpoints")
+### New args by Jose    
+    parser.add_argument("--freq_save_ckpt", default=10, help="Frequency of checkpoint saving in epochs")
+
+    args = parser.parse_args()
+
+    main(args)
