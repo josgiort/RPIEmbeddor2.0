@@ -5,13 +5,7 @@
 conda create -n rpi python=3.8 pip
 pip install -r requirements.txt
 ```
-## Install ESM-2
-```
-pip install git+https://github.com/facebookresearch/esm.git 
-```
-## Install RNA-FM
-```
-pip install rna-fm
+NEW VERSION UNDER DEVELOPMENT
 ```
 ## Infer RPIembeddor
 ```
