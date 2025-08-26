@@ -5,6 +5,8 @@ import logging
 import torch
 import lightning.pytorch.loggers
 import neps
+from lightning.pytorch.strategies import DDPStrategy
+
 
 from pathlib import Path
 
@@ -34,7 +36,7 @@ class Config:
         self.embedding_type = "new_esm_rnafm"
         self.protein_embeddings_path = "data/embeddings/protein_embeddings.npy"
         self.rna_embeddings_path = "data/embeddings/rna_embeddings.npy"
-        self.train_set_path = "data/interactions/train_set_2.parquet"
+        self.train_set_path = "data/interactions/train_set_2_reduced.parquet"
         self.val_set_path = "data/interactions/validation_set_2.parquet"
         self.__dict__.update(kwargs)
 
@@ -92,7 +94,11 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
     )
 
     # Get optimizer
-    optimizer = lightning_module.configure_optimizers()
+    # optimizer = lightning_module.configure_optimizers()
+
+    optimizer_list, _ = lightning_module.configure_optimizers()
+    optimizer = optimizer_list[0] 
+
 
     checkpoint_name = "checkpoint_rerun_hpo.pth"
 
@@ -125,7 +131,8 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
         min_epochs=epochs_previously_spent,
         max_epochs=epochs,
         logger=logger,
-        enable_checkpointing=False # checkpointing is handled by neps
+        enable_checkpointing=False, # checkpointing is handled by neps
+        strategy=DDPStrategy(find_unused_parameters=True),
     )
 
     # Get dataloaders

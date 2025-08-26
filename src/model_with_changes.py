@@ -26,7 +26,8 @@ from lightning import seed_everything
 
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryPrecision, BinaryRecall, \
-    BinaryF1Score, BinaryAccuracy, BinaryAUROC
+    BinaryF1Score, BinaryAccuracy, BinaryAUROC, BinaryAveragePrecision
+from torch.nn import BCEWithLogitsLoss
 
 
 class ModelWrapper(LightningModule):
@@ -36,13 +37,16 @@ class ModelWrapper(LightningModule):
         self.save_hyperparameters()
        
         self.model = model
-        self.loss_metric = torch.nn.BCELoss()
+        # self.loss_metric = torch.nn.BCELoss()
+        # Change to other kind of loss doing similiar thing
+        self.loss_metric = BCEWithLogitsLoss()
         self.metrics = MetricCollection([
             BinaryPrecision(),
             BinaryRecall(),
             BinaryF1Score(),
             BinaryAccuracy(),
-            BinaryAUROC()
+            BinaryAUROC(),
+            BinaryAveragePrecision()
         ])
         self.lr_init = lr_init
         self.weight_decay = weight_decay
@@ -62,36 +66,50 @@ class ModelWrapper(LightningModule):
 
     def training_step(self, batch, batch_idx):
         rna_embed, protein_embed, y, _ = batch
-        y = y.float()
+        y_float = y.float()
+        y_int = y.long()
         y_hat = self.forward(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        loss = self.loss_metric(y_hat, y)
+        loss = self.loss_metric(y_hat, y_float)
         self.train_losses.append(loss.item())
         self.log("train_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
-        self.train_metrics.update(y_hat, y)
+
+        y_probs = torch.sigmoid(y_hat)
+        self.train_metrics.update(y_probs, y_int)
         return loss
 
     def validation_step(self, batch, batch_idx):
         rna_embed, protein_embed, y, _ = batch
         y_hat = self(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        y = y.float()
-        loss = self.loss_metric(y_hat, y)
+        y_float = y.float()
+        y_int = y.long()
+        loss = self.loss_metric(y_hat, y_float)
         self.valid_losses.append(loss.item())
 
-        self.log("val_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
-        self.valid_metrics.update(y_hat, y)
+        #
+        y_probs = torch.sigmoid(y_hat)
+        self.valid_metrics.update(y_probs, y_int)
+        #
+
+        # self.log("val_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
+        # self.valid_metrics.update(y_hat, y)
 
     def test_step(self, batch, _):
         rna_embed, protein_embed, y, _ = batch
         y_hat = self(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        y = y.float()
-        loss = self.loss_metric(y_hat, y)
+        y_float = y.float()
+        y_int = y.long()
+        loss = self.loss_metric(y_hat, y_float)
         self.test_losses.append(loss.item())
+        #
+        y_probs = torch.sigmoid(y_hat)
+        self.test_metrics.update(y_probs, y_int)
+        #
 
-        self.log("test_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
-        self.test_metrics.update(y_hat, y)
+        # self.log("test_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
+        # self.test_metrics.update(y_hat, y)
 
     def predict_step(self, batch, batch_idx):
         # Similar to test_step but without logging
@@ -106,15 +124,16 @@ class ModelWrapper(LightningModule):
         self.log_dict(output, on_step=False, on_epoch=True)
         # remember to reset metrics at the end of the epoch
         valid_loss = mean(self.valid_losses)
-        self.log("valid_loss_epoch", valid_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("valid_loss_epoch", valid_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.valid_losses = []
         self.valid_metrics.reset()
+    
 
     def on_train_epoch_end(self) -> None:
         output = self.train_metrics.compute()
         self.log_dict(output)
         train_loss = mean(self.train_losses)
-        self.log("train_loss_epoch", train_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("train_loss_epoch", train_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.train_losses = []
         self.train_metrics.reset()
 
@@ -123,9 +142,9 @@ class ModelWrapper(LightningModule):
         self.log_dict(output, on_step=False, on_epoch=True)
         # remember to reset metrics at the end of the epoch
         test_loss = mean(self.test_losses)
-        self.log("test_loss_epoch", test_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test_loss_epoch", test_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         self.test_losses = []
-        self.test_metrics.reset()
+        self.test_metrics.reset()  
         
     def configure_optimizers(self):
         optimizer = optim.AdamW(self.parameters(), lr=self.lr_init, weight_decay=self.weight_decay)
@@ -259,7 +278,9 @@ class RNAProteinInterAct(Module):
 
         x = self.activation(self.linear2(x))
 
-        x = torch.sigmoid(self.linear3(x))
+        # x = torch.sigmoid(self.linear3(x))
+        # Removed sigmoid
+        x = self.linear3(x)
 
         return x[:, 0]
         # NOTE: try different tokens, e.g. mean (see below)
