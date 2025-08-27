@@ -36,7 +36,7 @@ class Config:
         self.embedding_type = "new_esm_rnafm"
         self.protein_embeddings_path = "data/embeddings/protein_embeddings.npy"
         self.rna_embeddings_path = "data/embeddings/rna_embeddings.npy"
-        self.train_set_path = "data/interactions/train_set_2_reduced.parquet"
+        self.train_set_path = "data/interactions/train_set_2.parquet"
         self.val_set_path = "data/interactions/validation_set_2.parquet"
         self.__dict__.update(kwargs)
 
@@ -89,7 +89,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
         lr_init=learning_rate,
         weight_decay=weight_decay,
         seed=config.seed,
-        t_max=15,
+        t_max=90,
         warmup_steps=1000,
     )
 
@@ -100,7 +100,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
     optimizer = optimizer_list[0] 
 
 
-    checkpoint_name = "checkpoint_rerun_hpo.pth"
+    checkpoint_name = "checkpoint_rerun_hpo_2.pth"
 
     # Resume training if config has already been evaluated on lower budget
     if previous_pipeline_directory is not None:
@@ -191,7 +191,7 @@ def main(args):
         weight_decay=neps.FloatParameter(lower=1e-4, upper=1e-3, default=5e-4, log=True),
         # dropout=neps.FloatParameter(lower=0, upper=1, default=0.2),
         dropout=neps.FloatParameter(lower=0.1, upper=0.4, default=0.2),
-        epochs=neps.IntegerParameter(lower=3, upper=15, is_fidelity=True)
+        epochs=neps.IntegerParameter(lower=3, upper=30, is_fidelity=True)
     )
 
     neps.run(
@@ -207,8 +207,8 @@ def main(args):
 if __name__ == "__main__":
    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results_dir", type=Path, default="neps_results", help="Directory to store neps run results in")
-    parser.add_argument("--max_budget", type=int, default=60, help="Maximum budget for neps run")
+    parser.add_argument("--results_dir", type=Path, default="neps_results_2", help="Directory to store neps run results in")
+    parser.add_argument("--max_budget", type=int, default=90, help="Maximum budget for neps run")
     args = parser.parse_args()
 
     main(args)
