@@ -15,7 +15,6 @@ sys.path.append(str(src_dir))
 from model import RNAProteinInterAct, RNAProteinInterActSE, ModelWrapper, BaseCNN
 from dataloader import get_dataloader
 
-
 def main(args):
     
     # Choose model based on embedding strategy
@@ -155,10 +154,10 @@ if __name__ == '__main__':
     parser.add_argument("--d_model", type=int, default=256, help="Dimension of model")
     parser.add_argument("--n_head", type=int, default=2, help="Number of heads")
     parser.add_argument("--dim_feedforward", type=int, default=20, help="Dimension of feedforward network")
-    parser.add_argument("--dropout", type=float, default=0.16498413360155254, help="Dropout rate")
-    parser.add_argument("--weight_decay", type=float, default=0.00044065772689560453, help="Weight decay")
+    parser.add_argument("--dropout", type=float, default=0.1522838792147156, help="Dropout rate")
+    parser.add_argument("--weight_decay", type=float, default=0.0009180315240476389, help="Weight decay")
     parser.add_argument("--key_padding_mask", action='store_true', default=False, help="Enables key padding mask")
-    parser.add_argument("--lr_init", type=float, default=0.004467238296557572, help="Initial learning rate")
+    parser.add_argument("--lr_init", type=float, default=0.0008297104602251761, help="Initial learning rate")
     parser.add_argument("--loader_type", default="RPIDataset", help="Type of dataloader")
     
     parser.add_argument("--cpr", action='store_true', default=False, help="Sets AdamCPR as optimizer") 

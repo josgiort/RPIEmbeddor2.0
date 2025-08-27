@@ -26,7 +26,7 @@ class Config:
         self.num_encoder_layers = 1
         self.key_padding_mask = True
         self.accelerator = 'cuda'
-        self.devices = 2
+        self.devices = 4
         self.batch_size = 64
         self.one_hot_encoding = False
         self.baseline = False
@@ -100,7 +100,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
     optimizer = optimizer_list[0] 
 
 
-    checkpoint_name = "checkpoint_rerun_hpo_2.pth"
+    checkpoint_name = "checkpoint_rerun_hpo_3.pth"
 
     # Resume training if config has already been evaluated on lower budget
     if previous_pipeline_directory is not None:
@@ -185,12 +185,12 @@ def main(args):
     logging.basicConfig(level=logging.INFO)
 
     hp_space = dict(
-        # learning_rate=neps.FloatParameter(lower=1e-5, upper=1e-2, log=True),
-        learning_rate=neps.FloatParameter(lower=1e-4, upper=5e-3, log=True),
-        # weight_decay=neps.FloatParameter(lower=1e-5, upper=1e-2, default=5e-4, log=True),
-        weight_decay=neps.FloatParameter(lower=1e-4, upper=1e-3, default=5e-4, log=True),
-        # dropout=neps.FloatParameter(lower=0, upper=1, default=0.2),
-        dropout=neps.FloatParameter(lower=0.1, upper=0.4, default=0.2),
+        learning_rate=neps.FloatParameter(lower=1e-5, upper=1e-2, log=True),
+        # learning_rate=neps.FloatParameter(lower=1e-4, upper=5e-3, log=True),
+        weight_decay=neps.FloatParameter(lower=1e-5, upper=1e-2, default=5e-4, log=True),
+        # weight_decay=neps.FloatParameter(lower=1e-4, upper=1e-3, default=5e-4, log=True),
+        dropout=neps.FloatParameter(lower=0, upper=1, default=0.2),
+        # dropout=neps.FloatParameter(lower=0.1, upper=0.4, default=0.2),
         epochs=neps.IntegerParameter(lower=3, upper=30, is_fidelity=True)
     )
 
@@ -207,7 +207,7 @@ def main(args):
 if __name__ == "__main__":
    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results_dir", type=Path, default="neps_results_2", help="Directory to store neps run results in")
+    parser.add_argument("--results_dir", type=Path, default="neps_results_3", help="Directory to store neps run results in")
     parser.add_argument("--max_budget", type=int, default=90, help="Maximum budget for neps run")
     args = parser.parse_args()
 
