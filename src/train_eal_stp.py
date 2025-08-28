@@ -14,6 +14,7 @@ src_dir = Path.cwd().parent
 sys.path.append(str(src_dir))
 from model import RNAProteinInterAct, RNAProteinInterActSE, ModelWrapper, BaseCNN
 from dataloader import get_dataloader
+from lightning.pytorch.callbacks import EarlyStopping
 
 def main(args):
     
@@ -106,6 +107,25 @@ def main(args):
         batch_size=args.batch_size
     )
 
+
+    val_dataloader = get_dataloader(  
+        loader_type=args.loader_type,
+        dataset_path=args.val_set_path,
+        rna_embeddings_path=args.rna_embeddings_path,
+        protein_embeddings_path=args.protein_embeddings_path,
+        seed=args.seed,
+        num_workers=args.num_dataloader_workers,
+        batch_size=args.batch_size,
+        shuffle=False
+    )
+
+    early_stopping_callback = EarlyStopping(
+        monitor="val_BinaryAUROC",  # metric to monitor
+        mode="max",                 # maximize AUROC
+        patience=5,                 # stop if no improvement in 5 epochs
+        verbose=True
+    )
+
     # train_dataloader_subset = get_dataloader_subset(  
     #     loader_type=args.loader_type,
     #     dataset_path=args.train_set_path,
@@ -122,7 +142,7 @@ def main(args):
     #     break
 
     # Train model
-    trainer.fit(model=lightning_module, train_dataloaders=train_dataloader)
+    trainer.fit(model=lightning_module, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
     # Test generalization after the fit
 #     test_dataloader = get_dataloader(
@@ -166,7 +186,8 @@ if __name__ == '__main__':
     parser.add_argument("--num_dataloader_workers", type=int, default=8, help="Number of dataloader workers")
     parser.add_argument("--protein_embeddings_path", default="data/embeddings/protein_embeddings.npy", help="Path to protein embeddings")
     parser.add_argument("--rna_embeddings_path", default="data/embeddings/rna_embeddings.npy", help="Path to RNA embeddings")
-    parser.add_argument("--train_set_path", default="data/interactions/train_val_set_2.parquet", help="Path to the train set file")
+    parser.add_argument("--train_set_path", default="data/interactions/train_set_2.parquet", help="Path to the train set file")
+    parser.add_argument("--val_set_path", default="data/interactions/val_set_2.parquet", help="Path to the train set file")
     parser.add_argument("--seed", type=int, default=0, help="Seed for reproducibility")
     parser.add_argument("--checkpoints_dir", default="checkpoints", help="Path to the checkpoints")
 ### New args by Jose    

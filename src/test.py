@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_argument("--rna_embeddings_path", type=str, default="data/embeddings/rna_embeddings.npy", help="Path to all RNA embeddings")
     parser.add_argument("--protein_embeddings_path", type=str, default="data/embeddings/protein_embeddings.npy", help="Path to all protein embeddings")
     parser.add_argument("--test_set_path", type=str, default="data/interactions/test_set_2.parquet", help="Path to the test set file")
-    parser.add_argument("--checkpoint_path", type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/checkpoint9381/last-reproducing6_seed_9381_fixed, lr: 0.004467238296557572,             wd: 0.00044065772689560453, dr: 0.16498413360155254, seed: 9381.ckpt", help="Path to model's checkpoint")
+    parser.add_argument("--checkpoint_path", type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/checkpoint1427_3sm/last-reproducing8_seed_1427_fixed_3sm, lr: 0.0006115996938636802,             wd: 0.001420772432688718, dr: 0.38678249351559524, seed: 1427.ckpt", help="Path to model's checkpoint")
     parser.add_argument("--device", type=str, default="cuda", help="Device to run the model on")
 
     args = parser.parse_args()

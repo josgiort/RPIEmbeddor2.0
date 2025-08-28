@@ -20,7 +20,7 @@ from dataloader import get_dataloader
 
 class Config:
     def __init__(self, **kwargs):
-        self.d_model = 256
+        self.d_model = 2048
         self.n_head = 2
         self.dim_feedforward = 20
         self.num_encoder_layers = 1
@@ -100,7 +100,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
     optimizer = optimizer_list[0] 
 
 
-    checkpoint_name = "checkpoint_rerun_hpo_3.pth"
+    checkpoint_name = "checkpoint_rerun_hpo_4.pth"
 
     # Resume training if config has already been evaluated on lower budget
     if previous_pipeline_directory is not None:
@@ -207,7 +207,7 @@ def main(args):
 if __name__ == "__main__":
    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results_dir", type=Path, default="neps_results_3", help="Directory to store neps run results in")
+    parser.add_argument("--results_dir", type=Path, default="neps_results_4", help="Directory to store neps run results in")
     parser.add_argument("--max_budget", type=int, default=90, help="Maximum budget for neps run")
     args = parser.parse_args()
 
