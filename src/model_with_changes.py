@@ -117,14 +117,15 @@ class ModelWrapper(LightningModule):
     def on_validation_epoch_end(self) -> None:
         # Epoch-level metrics
         output = self.valid_metrics.compute()
-        self.log_dict(output, sync_dist=True)
+        val_auroc = output["val_BinaryAUROC"]
+        self.log("val_BinaryAUROC", val_auroc, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log_dict(output, on_epoch=True, prog_bar=False, sync_dist=True)
         # Epoch-level validation loss
         valid_loss = mean(self.valid_losses)
         self.log("valid_loss_epoch", valid_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         # remember to reset metrics at the end of the epoch
         self.valid_losses = []
         self.valid_metrics.reset()
-    
 
     def on_train_epoch_end(self) -> None:
         # Epoch-level metrics

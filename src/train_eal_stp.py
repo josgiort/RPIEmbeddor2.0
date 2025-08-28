@@ -12,7 +12,7 @@ from lightning.pytorch.strategies import DDPStrategy
 #
 src_dir = Path.cwd().parent
 sys.path.append(str(src_dir))
-from model import RNAProteinInterAct, RNAProteinInterActSE, ModelWrapper, BaseCNN
+from model_with_changes import RNAProteinInterAct, RNAProteinInterActSE, ModelWrapper, BaseCNN
 from dataloader import get_dataloader
 from lightning.pytorch.callbacks import EarlyStopping
 
@@ -66,18 +66,38 @@ def main(args):
     else:
         logger = True
 
-    # Initialize checkpoint callback to save best models        
+    # # Initialize checkpoint callback to save best models        
+    # checkpoint_callback = ModelCheckpoint(
+    #     dirpath=args.checkpoints_dir,  # Custom path for saving checkpoints
+    #     filename='{epoch}-' + full_exp_name,  # Filename format
+    #     monitor='train_loss',  # Metric to monitor for best models
+    #     mode='min',  # Mode for the monitored metric, 'min' for minimization
+    #     save_last=True,  # Save the last checkpoint in addition to the best ones
+    #     # every_n_epochs=args.freq_save_ckpt, # Save the checkpoints every n epochs to allow resuming training from a given epoch (New argument)
+    # )
+
+    # Model checkpoint callback (optional) 
     checkpoint_callback = ModelCheckpoint(
-        dirpath=args.checkpoints_dir,  # Custom path for saving checkpoints
-        filename='{epoch}-' + full_exp_name,  # Filename format
-        monitor='train_loss',  # Metric to monitor for best models
-        mode='min',  # Mode for the monitored metric, 'min' for minimization
-        save_last=True,  # Save the last checkpoint in addition to the best ones
-        # every_n_epochs=args.freq_save_ckpt, # Save the checkpoints every n epochs to allow resuming training from a given epoch (New argument)
+        dirpath=args.checkpoints_dir, 
+        filename='{epoch}-' + full_exp_name, 
+        monitor='val_BinaryAUROC', # monitor validation AUROC instead of train_loss 
+        mode='max', # maximize 
+        save_last=True,
     )
-    checkpoint_callback.CHECKPOINT_NAME_LAST = "last-" + args.wandb_group + "_" + full_exp_name
+
+
+    # checkpoint_callback.CHECKPOINT_NAME_LAST = "last-" + args.wandb_group + "_" + full_exp_name
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
+
+
+    early_stopping_callback = EarlyStopping(
+        monitor="val_BinaryAUROC",  # metric to monitor
+        mode="max",                 # maximize AUROC
+        patience=5,                 # stop if no improvement in 5 epochs
+        verbose=True
+    )
+
 
     # Initialize trainer 
     trainer = Trainer(
@@ -90,7 +110,7 @@ def main(args):
         logger=logger,
         log_every_n_steps=1,
         #deterministic=True, # Added determinism for debugging
-        callbacks=[lr_monitor, checkpoint_callback]
+        callbacks=[lr_monitor, checkpoint_callback, early_stopping_callback]
     )
 
 
@@ -117,13 +137,6 @@ def main(args):
         num_workers=args.num_dataloader_workers,
         batch_size=args.batch_size,
         shuffle=False
-    )
-
-    early_stopping_callback = EarlyStopping(
-        monitor="val_BinaryAUROC",  # metric to monitor
-        mode="max",                 # maximize AUROC
-        patience=5,                 # stop if no improvement in 5 epochs
-        verbose=True
     )
 
     # train_dataloader_subset = get_dataloader_subset(  
@@ -174,10 +187,10 @@ if __name__ == '__main__':
     parser.add_argument("--d_model", type=int, default=256, help="Dimension of model")
     parser.add_argument("--n_head", type=int, default=2, help="Number of heads")
     parser.add_argument("--dim_feedforward", type=int, default=20, help="Dimension of feedforward network")
-    parser.add_argument("--dropout", type=float, default=0.38678249351559524, help="Dropout rate")
-    parser.add_argument("--weight_decay", type=float, default=0.001420772432688718, help="Weight decay")
+    parser.add_argument("--dropout", type=float, default=0.1522838792147156, help="Dropout rate")
+    parser.add_argument("--weight_decay", type=float, default=0.0009180315240476389, help="Weight decay")
     parser.add_argument("--key_padding_mask", action='store_true', default=False, help="Enables key padding mask")
-    parser.add_argument("--lr_init", type=float, default=0.0006115996938636802, help="Initial learning rate")
+    parser.add_argument("--lr_init", type=float, default=0.0008297104602251761, help="Initial learning rate")
     parser.add_argument("--loader_type", default="RPIDataset", help="Type of dataloader")
     
     parser.add_argument("--cpr", action='store_true', default=False, help="Sets AdamCPR as optimizer") 
