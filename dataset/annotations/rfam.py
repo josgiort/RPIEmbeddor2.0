@@ -12,7 +12,7 @@ from tqdm import tqdm
 from multiprocessing import Pool
 from time import time
 
-sys.path.append("/pfs/work9/workspace/scratch/fr_jg590-restored/rpi-main/dataset")
+sys.path.append("/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_2/dataset")
 from utils import row2fasta
 
 
@@ -195,10 +195,10 @@ def assign_family_info(rna_path, rfam_dir, rfam_cm_path,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Scanning available RNA sequences against rfam database.')
 
-    parser.add_argument('--working_dir', type=str, default='/pfs/work9/workspace/scratch/fr_jg590-restored/rpi-main_2', help='Working directory path.')
+    parser.add_argument('--working_dir', type=str, default='/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_2', help='Working directory path.')
     parser.add_argument('--results_dir', type=str, default="data/annotations", help='Results directory path.')
-    parser.add_argument('--rfam_dir', type=str, default="/pfs/work9/workspace/scratch/fr_jg590-restored/tools/rfam", help='Rfam directory path.')
-    parser.add_argument('--rna_short', type=str, default="rna_clusters.parquet", help='Path to RNA sequences file.')
+    parser.add_argument('--rfam_dir', type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/tools/rfam", help='Rfam directory path.')
+    parser.add_argument('--rna_short', type=str, default="rna_short.parquet", help='Path to RNA sequences file.')
     parser.add_argument('--rfam_cm', type=str, default="Rfam.cm", help='Path to protein sequences file.')
     parser.add_argument('--rfam_clanin', type=str, default="Rfam.clanin", help='Path to .clanin file.')
     parser.add_argument('--cmscan_path', type=str, default="/home/fr/fr_fr/fr_jg590/.conda/envs/rpi/bin/cmscan", help='Path to CMScan executable.')

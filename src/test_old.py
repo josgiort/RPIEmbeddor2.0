@@ -4,8 +4,9 @@ import torch
 
 from lightning import Trainer
 
-from model import ModelWrapper
+from model_with_changes import ModelWrapper
 from dataloader import get_dataloader
+#import pytorch_lightning as pl
 
 def main(args):
 
@@ -26,10 +27,14 @@ def main(args):
         dataset_path=args.test_set_path,
         rna_embeddings_path=args.rna_embeddings_path,
         protein_embeddings_path=args.protein_embeddings_path,
+        shuffle = False,
         num_workers=args.num_workers,
         batch_size=args.batch_size,
     )
 
+    
+    #pl.seed_everything(424242, workers=True)
+    
     trainer = Trainer(accelerator=args.device)
     trainer.test(model, dataloaders=test_dataloader)
 
@@ -46,11 +51,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Command line options for the script")
     
     parser.add_argument("--loader_type", type=str, default="RPIDataset", help="Type of dataloader")
-    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers")
     parser.add_argument("--rna_embeddings_path", type=str, default="data/embeddings/rna_embeddings.npy", help="Path to all RNA embeddings")
     parser.add_argument("--protein_embeddings_path", type=str, default="data/embeddings/protein_embeddings.npy", help="Path to all protein embeddings")
     parser.add_argument("--test_set_path", type=str, default="data/interactions/test_set.parquet", help="Path to the test set file")
+    # parser.add_argument("--checkpoint_path", type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/checkpoint9381_2earlystopping/last.ckpt", help="Path to model's checkpoint")
     parser.add_argument("--checkpoint_path", type=str, default="checkpoints/last-esm_rnafm_rpiembeddor, lr: 0.001, wd: 0.1, dr: 0.3, seed: 6844.ckpt", help="Path to model's checkpoint")
     parser.add_argument("--device", type=str, default="cuda", help="Device to run the model on")
 

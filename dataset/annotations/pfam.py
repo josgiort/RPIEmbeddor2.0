@@ -11,7 +11,7 @@ from tqdm import tqdm
 from time import time
 from multiprocessing import Pool
 
-sys.path.append("/pfs/work9/workspace/scratch/fr_jg590-restored/rpi-main/dataset")
+sys.path.append("/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_2/dataset")
 
 from utils import row2fasta
 
@@ -100,7 +100,7 @@ def call_pfamscan(pfam_dir, pfam_results_dir, pfam_scan_path, row):
 
     subprocess.run([
         "perl", 
-        "-I/pfs/work9/workspace/scratch/fr_jg590-restored/data/pfam/PfamScan",
+        "-I/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/data/pfam/PfamScan",
         pfam_scan_path,
         "-fasta", fasta_path,
         "-dir", pfam_dir,
@@ -213,12 +213,12 @@ def parse_tbl_file(file_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Scanning available protein sequences against pfam database.')
 
-    parser.add_argument('--working_dir', type=str, default='/pfs/work9/workspace/scratch/fr_jg590-restored/rpi-main_2/', help='Working directory path.')
+    parser.add_argument('--working_dir', type=str, default='/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_2/', help='Working directory path.')
     parser.add_argument('--annotations_dir', type=str, default="data/annotations/", help='Results directory path.')
-    parser.add_argument('--pfam_dir', type=str, default="/pfs/work9/workspace/scratch/fr_jg590-restored/data/pfam/", help='Pfam directory path.')
-    parser.add_argument('--protein_short', type=str, default="proteins_clusters.parquet", help='Path to protein sequences file.')
-    parser.add_argument('--hmmpress_path', type=str, default="/pfs/work9/workspace/scratch/fr_jg590-restored/tools/hmmer/bin/hmmpress", help='Path to hmmpress executable.')
-    parser.add_argument('--pfam_scan_path', type=str, default="/pfs/work9/workspace/scratch/fr_jg590-restored/data/pfam/PfamScan/pfam_scan.pl", help='Path to pfam_scan.pl')
+    parser.add_argument('--pfam_dir', type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/data/pfam/", help='Pfam directory path.')
+    parser.add_argument('--protein_short', type=str, default="proteins_short.parquet", help='Path to protein sequences file.')
+    parser.add_argument('--hmmpress_path', type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/tools/hmmer/bin/hmmpress", help='Path to hmmpress executable.')
+    parser.add_argument('--pfam_scan_path', type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/data/pfam/PfamScan/pfam_scan.pl", help='Path to pfam_scan.pl')
      
     args = parser.parse_args()
 

@@ -200,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument("--protein_embeddings_path", default="data/embeddings/protein_embeddings.npy", help="Path to protein embeddings")
     parser.add_argument("--rna_embeddings_path", default="data/embeddings/rna_embeddings.npy", help="Path to RNA embeddings")
     parser.add_argument("--train_set_path", default="data/interactions/train_set_2.parquet", help="Path to the train set file")
-    parser.add_argument("--val_set_path", default="data/interactions/val_set_2.parquet", help="Path to the train set file")
+    parser.add_argument("--val_set_path", default="data/interactions/validation_set_2.parquet", help="Path to the train set file")
     parser.add_argument("--seed", type=int, default=0, help="Seed for reproducibility")
     parser.add_argument("--checkpoints_dir", default="checkpoints", help="Path to the checkpoints")
 ### New args by Jose    

@@ -9,6 +9,7 @@ import numpy as np
 from time import time
 from torch.utils.data import DataLoader, Dataset, random_split
 from typing import Optional
+from torch.utils.data import Subset
 
 
 class RPIDataset(Dataset):
@@ -174,6 +175,81 @@ def get_dataloader(
         )
     return DataLoader(dataset, shuffle=shuffle, **kwargs)
   
+
+
+def get_dataloader_subset(
+        loader_type: str,
+        dataset_path: str,
+        rna_embeddings_path: str,
+        protein_embeddings_path: str,
+        seed: Optional[int] = None,
+        shuffle: bool = True,
+        **kwargs
+    ):
+    """
+    Loads interaction dataset from .parquet file and returns two DataLoader objects.
+    When using for training, provide split_set_size and seed to enable random split
+    between training and validation sets.
+    When using for testing, skip the optional arguments.
+
+    Args:
+    - loader_type (str): Type of dataloader to be used. Can be one of 
+    ['RPIDatasetProteinRand', 'RPIDatasetRNARand', 'PandasInMemory'].
+    - dataset_path (str): Path to the dataset file.
+    - rna_embeddings_path (str): Path to the RNA embeddings file.
+    - protein_embeddings_path (str): Path to the protein embeddings file.
+    - seed (int): Seed for reproducibility of the split.
+    - shuffle (bool): Whether to shuffle the dataset.
+
+    Returns:
+    dataset_dataloader (DataLoader): DataLoader object for the dataset.
+    """
+    assert loader_type in ['RPIDatasetProteinRand', 'RPIDatasetRNARand', 'RPIDataset',
+                           ], 'Invalid loader_type specified.'
+    if seed:
+        set_seed(seed)
+    
+    rna_embeddings, protein_embeddings = RPIDataset.pre_load_embeddings(
+        rna_embeddings_path,
+        protein_embeddings_path
+    )
+
+    if loader_type == 'RPIDatasetProteinRand':
+        dataset = RPIDatasetProteinRand(
+            rna_embeddings,
+            protein_embeddings,
+            dataset_path,
+        )
+    elif loader_type == 'RPIDatasetRNARand':
+        dataset = RPIDatasetRNARand(
+            rna_embeddings,
+            protein_embeddings,
+            dataset_path,
+        )
+    elif loader_type == 'RPIDataset':
+        dataset = RPIDataset(
+            rna_embeddings,
+            protein_embeddings,
+            dataset_path,
+        )
+
+    # Select a tiny subset (e.g., 32 samples)
+    subset_indices = np.random.choice(
+        len(dataset),
+        size=32,
+        replace=False
+    )
+
+    dataset_subset = Subset(dataset, subset_indices)
+
+    train_dataloader_subset = DataLoader(
+        dataset_subset,
+        shuffle=True,
+        **kwargs
+    )
+
+    return train_dataloader_subset
+
 
 def set_seed(seed):
     """

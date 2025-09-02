@@ -26,8 +26,7 @@ from lightning import seed_everything
 
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryPrecision, BinaryRecall, \
-    BinaryF1Score, BinaryAccuracy, BinaryAUROC, BinaryAveragePrecision
-from torch.nn import BCEWithLogitsLoss
+    BinaryF1Score, BinaryAccuracy, BinaryAUROC
 
 
 class ModelWrapper(LightningModule):
@@ -37,16 +36,13 @@ class ModelWrapper(LightningModule):
         self.save_hyperparameters()
        
         self.model = model
-        # self.loss_metric = torch.nn.BCELoss()
-        # Change to other kind of loss doing similiar thing
-        self.loss_metric = BCEWithLogitsLoss()
+        self.loss_metric = torch.nn.BCELoss()
         self.metrics = MetricCollection([
             BinaryPrecision(),
             BinaryRecall(),
             BinaryF1Score(),
             BinaryAccuracy(),
-            BinaryAUROC(),
-            BinaryAveragePrecision()
+            BinaryAUROC()
         ])
         self.lr_init = lr_init
         self.weight_decay = weight_decay
@@ -66,45 +62,36 @@ class ModelWrapper(LightningModule):
 
     def training_step(self, batch, batch_idx):
         rna_embed, protein_embed, y, _ = batch
-        y_float = y.float()
-        y_int = y.long()
+        y = y.float()
         y_hat = self.forward(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        # Compute loss
-        loss = self.loss_metric(y_hat, y_float)
+        loss = self.loss_metric(y_hat, y)
         self.train_losses.append(loss.item())
         self.log("train_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
-        # Compute metrics (probabilities for metrics)
-        y_probs = torch.sigmoid(y_hat)
-        self.train_metrics.update(y_probs, y_int)
+        self.train_metrics.update(y_hat, y)
         return loss
 
     def validation_step(self, batch, batch_idx):
         rna_embed, protein_embed, y, _ = batch
         y_hat = self(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        y_float = y.float()
-        y_int = y.long()
-         # Loss
-        loss = self.loss_metric(y_hat, y_float)
+        y = y.float()
+        loss = self.loss_metric(y_hat, y)
         self.valid_losses.append(loss.item())
-        # Metrics
-        y_probs = torch.sigmoid(y_hat)
-        self.valid_metrics.update(y_probs, y_int)
+
+        self.log("val_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
+        self.valid_metrics.update(y_hat, y)
 
     def test_step(self, batch, _):
         rna_embed, protein_embed, y, _ = batch
         y_hat = self(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
-        y_float = y.float()
-        y_int = y.long()
-        # Loss
-        loss = self.loss_metric(y_hat, y_float)
+        y = y.float()
+        loss = self.loss_metric(y_hat, y)
         self.test_losses.append(loss.item())
-        # Metrics
-        y_probs = torch.sigmoid(y_hat)
-        self.test_metrics.update(y_probs, y_int)
-        # self.log("test_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
+
+        self.log("test_loss", loss, on_step=True, on_epoch=False, logger=True, prog_bar=True)
+        self.test_metrics.update(y_hat, y)
 
     def predict_step(self, batch, batch_idx):
         # Similar to test_step but without logging
@@ -115,44 +102,30 @@ class ModelWrapper(LightningModule):
         return {'logits': y_hat, 'labels': y}
 
     def on_validation_epoch_end(self) -> None:
-        # Epoch-level metrics
         output = self.valid_metrics.compute()
-        val_auroc = output.pop("val_BinaryAUROC")
-        self.log("val_BinaryAUROC", val_auroc, on_epoch=True, prog_bar=True, sync_dist=True)
-        self.log_dict(output, on_epoch=True, prog_bar=False, sync_dist=True)
-        # Epoch-level validation loss
-        valid_loss = mean(self.valid_losses)
-        self.log("valid_loss_epoch", valid_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log_dict(output, on_step=False, on_epoch=True)
         # remember to reset metrics at the end of the epoch
+        valid_loss = mean(self.valid_losses)
+        self.log("valid_loss_epoch", valid_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.valid_losses = []
         self.valid_metrics.reset()
 
-
-
-
-
-
     def on_train_epoch_end(self) -> None:
-        # Epoch-level metrics
         output = self.train_metrics.compute()
-        self.log_dict(output,  sync_dist=True)
-        # Epoch-level train loss
+        self.log_dict(output)
         train_loss = mean(self.train_losses)
-        self.log("train_loss_epoch", train_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
-        # remember to reset metrics at the end of the epoch
+        self.log("train_loss_epoch", train_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.train_losses = []
         self.train_metrics.reset()
 
     def on_test_epoch_end(self) -> None:
-        # Epoch-level metrics
         output = self.test_metrics.compute()
-        self.log_dict(output, sync_dist=True)
-        # Epoch-level test loss
-        test_loss = mean(self.test_losses)
-        self.log("test_loss_epoch", test_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log_dict(output, on_step=False, on_epoch=True)
         # remember to reset metrics at the end of the epoch
+        test_loss = mean(self.test_losses)
+        self.log("test_loss_epoch", test_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.test_losses = []
-        self.test_metrics.reset()  
+        self.test_metrics.reset()
         
     def configure_optimizers(self):
         optimizer = optim.AdamW(self.parameters(), lr=self.lr_init, weight_decay=self.weight_decay)
@@ -286,10 +259,7 @@ class RNAProteinInterAct(Module):
 
         x = self.activation(self.linear2(x))
 
-        # Removed sigmoid
-        # x = torch.sigmoid(self.linear3(x))
-        
-        x = self.linear3(x)
+        x = torch.sigmoid(self.linear3(x))
 
         return x[:, 0]
         # NOTE: try different tokens, e.g. mean (see below)
