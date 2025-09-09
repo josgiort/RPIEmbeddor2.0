@@ -149,12 +149,12 @@ def merge_embeddings(emb_dir, model_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--enable_cuda', type=bool, default=True, help='Enable or disable CUDA')
-    parser.add_argument('--unique_seq_path', type=str, default="data/annotations/rpi2825_unique_proteins.parquet", help='Path to the unique sequence data')
+    parser.add_argument('--enable_cuda', type=bool, default=False, help='Enable or disable CUDA')
+    parser.add_argument('--unique_seq_path', type=str, default="data/annotations/unique_rna_clip.parquet", help='Path to the unique sequence data')
     parser.add_argument('--max_task_id', type=int, default=1, help='Maximum task ID')
     parser.add_argument('--task_id', type=int, default=1, help='Task ID')
     parser.add_argument('--working_dir', type=str, default='/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_3/', help='Working directory path.')
-    parser.add_argument('--emb_dir', type=str, default="data/embeddings/rpi2825", help='Directory to save the results')
+    parser.add_argument('--emb_dir', type=str, default="data/embeddings/clip", help='Directory to save the results')
     parser.add_argument('--model_type', type=str, choices=['rna_fm', 'esm2'], required=True, help='Type of model to use (rna_fm or esm2)')
     parser.add_argument('--if_inference', action='store_true', default=False, help='Hides logging info during inference')
                         
