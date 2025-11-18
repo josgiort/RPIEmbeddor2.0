@@ -18,6 +18,9 @@ src_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(src_dir))
 from utils import divide_dataframe
 
+# New imports
+from transformers import AutoTokenizer, AutoModel
+
 
 def create_embeddings(emb_dir, data_path, model_type, enable_cuda, max_task_id, task_id, if_inference):
     """
@@ -49,12 +52,19 @@ def create_embeddings(emb_dir, data_path, model_type, enable_cuda, max_task_id, 
         print(f"Creating embeddings for {len(data_batch)} sequences out of {df.shape[0]}")
 
     # Load the specified model
-    if model_type == 'rna_fm':
-        model, alphabet = fm.pretrained.rna_fm_t12()
+    # if model_type == 'rna_fm':
+    #     model, alphabet = fm.pretrained.rna_fm_t12()
+    #     idx = '1'
+    #     repr_layer = 12
+
+    if model_type == 'gena_lm':
+        tokenizer = AutoTokenizer.from_pretrained("AIRI-Institute/gena-lm-bert-large-t2t")
+        model = AutoModel.from_pretrained("AIRI-Institute/gena-lm-bert-large-t2t", trust_remote_code=True)
         idx = '1'
-        repr_layer = 12
+    # We keep ESM2 for proteins        
     elif model_type == 'esm2':
         model, alphabet = esm.pretrained.esm2_t30_150M_UR50D()
+        batch_converter = alphabet.get_batch_converter()
         idx = '2'
         repr_layer = 30
     else:
@@ -63,12 +73,11 @@ def create_embeddings(emb_dir, data_path, model_type, enable_cuda, max_task_id, 
      # Ensure the directory exists
     if not os.path.exists(emb_dir):
         os.makedirs(emb_dir)
-
-    batch_converter = alphabet.get_batch_converter()
+    
     model.eval()  # Disables dropout for deterministic results
 
     if enable_cuda:
-        model.cuda()
+        model.cuda()        
 
     timings = []
 
@@ -77,25 +86,41 @@ def create_embeddings(emb_dir, data_path, model_type, enable_cuda, max_task_id, 
 
         embedding_id = row[f'Sequence_{idx}_emb_ID']
         sequence = row[f'Sequence_{idx}'].upper()
+        
+        if model_type == 'gena_lm':
+            # Preprocess sequences so that the U gets replaced by T, since GENALM
+            # doesnt know RNA but DNA. LATER WE FINETUNE IT BY RETRAINING WITH RNA SAMPLES            
+            sequence = sequence.replace("U", "T")
 
-        # Process sequence
-        _, _, batch_tokens = batch_converter([(embedding_id, sequence)])
-        batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
+            # Process sequence
+            batch_tokens = tokenizer(sequence, return_tensors="pt", padding="max_length", truncation=True, max_length=512)
+            batch_lens = (batch_tokens["attention_mask"] == 1).sum(dim=1)
 
-        if enable_cuda:
-            batch_tokens = batch_tokens.to(device='cuda')
+            if enable_cuda:
+                batch_tokens = {k: v.cuda() for k, v in batch_tokens.items()}
 
-        # Extract per-residue representations (on CPU)
-        with torch.no_grad():
-            results = model(batch_tokens, repr_layers=[repr_layer], return_contacts=True)
-        token_representations = results["representations"][repr_layer].cpu()
+            with torch.no_grad():
+                results = model(**batch_tokens, output_hidden_states=True)
+            token_representations = results.hidden_states[-1].cpu()  # shape: [batch_size, batch_lens, hidden_dim]
+            
+        elif model_type == 'esm2':
+            # Process sequence
+            _, _, batch_tokens = batch_converter([(embedding_id, sequence)])
+            batch_lens = (batch_tokens != alphabet.padding_idx).sum(1)
 
+            if enable_cuda:
+                batch_tokens = batch_tokens.to(device='cuda')
+
+            # Extract per-residue representations (on CPU)
+            with torch.no_grad():
+                results = model(batch_tokens, repr_layers=[repr_layer], return_contacts=True)
+            token_representations = results["representations"][repr_layer].cpu()
+        
         # Generate per-sequence representations
         # NOTE: token 0 is always a beginning-of-sequence token, so the first residue is token 1.
         for i, tokens_len in enumerate(batch_lens):
-            np.save(f"{emb_dir}/{embedding_id}",
-                    token_representations[i, 1: tokens_len - 1].float())
-        
+            np.save(f"{emb_dir}/{embedding_id}",token_representations[i, 1: tokens_len - 1].float())
+            # np.save(f"{emb_dir}/{embedding_id}",token_representations[i, 0: tokens_len - 1].float())                    
         del batch_tokens, token_representations, results, batch_lens
 
         if enable_cuda:
@@ -118,17 +143,18 @@ def merge_embeddings(emb_dir, model_type):
     Returns:
     - None
     """
-    sequence_type = 'rna' if model_type == 'rna_fm' else 'protein'
+    sequence_type, hid_dim = ('rna', 1024) if model_type == 'gena_lm' else ('protein', 640)
 
     # Get all .npy files from the directory
     file_paths = [os.path.join(emb_dir, f) for f in os.listdir(emb_dir) if f.endswith('.npy')]
 
     embeddings = []
 
+
     # Pad embeddings to the same length
     for embedding_path in tqdm(file_paths, total=len(file_paths), desc="Merging embeddings"):
         emb = np.load(embedding_path)
-        padded_emb = np.zeros((1024, 640))
+        padded_emb = np.zeros((1024, hid_dim))
         padded_emb[:emb.shape[0], :] = emb
         embeddings.append(padded_emb)
 
@@ -141,7 +167,7 @@ def merge_embeddings(emb_dir, model_type):
 
     # Save the merged embeddings
     parent_dir = os.path.dirname(emb_dir)
-    merged_embeddings_path = os.path.join(parent_dir, f"{sequence_type}_embeddings.npy")
+    merged_embeddings_path = os.path.join(parent_dir, f"{sequence_type}_embeddings_trust_remote.npy")
     np.save(merged_embeddings_path, embeddings)
     print(f"Merged embeddings saved to {merged_embeddings_path}")
 
@@ -150,20 +176,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--enable_cuda', type=bool, default=True, help='Enable or disable CUDA')
-    parser.add_argument('--unique_seq_path', type=str, default="data/annotations/unique_proteins.parquet", help='Path to the unique sequence data')
+    parser.add_argument('--unique_seq_path', type=str, default="data/annotations/unique_rna_clip.parquet", help='Path to the unique sequence data')
     parser.add_argument('--max_task_id', type=int, default=1, help='Maximum task ID')
     parser.add_argument('--task_id', type=int, default=1, help='Task ID')
-    parser.add_argument('--working_dir', type=str, default='/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_4', help='Working directory path.')
-    parser.add_argument('--emb_dir', type=str, default="data/embeddings/rnainteract_retrain_check", help='Directory to save the results')
-    parser.add_argument('--model_type', type=str, choices=['rna_fm', 'esm2'], required=True, help='Type of model to use (rna_fm or esm2)')
+    parser.add_argument('--working_dir', type=str, default='/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/rpi-main_4/', help='Working directory path.')
+    parser.add_argument('--emb_dir', type=str, default="data/embeddings/clip", help='Directory to save the results')
+    parser.add_argument('--model_type', type=str, choices=['gena_lm', 'esm2'], required=True, help='Type of model to use (gena_lm or esm2)')
     parser.add_argument('--if_inference', action='store_true', default=False, help='Hides logging info during inference')
-
+                        
     args = parser.parse_args()
 
     os.chdir(args.working_dir)
 
-    if args.model_type == 'rna_fm':
-        rna_fm_dir = os.path.join(args.emb_dir, "rna_fm")
+    if args.model_type == 'gena_lm':
+        rna_fm_dir = os.path.join(args.emb_dir, "gena_lm_trust_remote")
 
         create_embeddings(rna_fm_dir, args.unique_seq_path, args.model_type, args.enable_cuda, args.max_task_id, args.task_id, args.if_inference)
         merge_embeddings(rna_fm_dir, args.model_type)
@@ -175,4 +201,4 @@ if __name__ == '__main__':
         merge_embeddings(esm_dir, args.model_type)
 
     else:
-        raise ValueError("Invalid model type. Choose 'rna_fm' or 'esm2'.")
+        raise ValueError("Invalid model type. Choose 'gena_lm' or 'esm2'.")

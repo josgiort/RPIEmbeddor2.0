@@ -30,13 +30,13 @@ class Config:
         self.one_hot_encoding = False
         self.baseline = False
         self.num_dataloader_workers = 1
-        self.seed = 150
+        self.seed = 1
         self.loader_type = "RPIDataset"
         self.embedding_type = "new_esm_rnafm"
-        self.protein_embeddings_path = "data/embeddings/protein_embeddings.npy"
-        self.rna_embeddings_path = "data/embeddings/rna_embeddings.npy"
-        self.train_set_path = "data/interactions/train_set.parquet"
-        self.val_set_path = "data/interactions/test_set.parquet"
+        self.protein_embeddings_path = "data/embeddings/clip/protein_embeddings.npy"
+        self.rna_embeddings_path = "data/embeddings/clip/rna_embeddings_trust_remote.npy"
+        self.train_set_path = "data/interactions/pum2_pairs_train.parquet"
+        self.val_set_path = "data/interactions/pum2_pairs_val.parquet"
         self.__dict__.update(kwargs)
 
 
@@ -88,7 +88,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
         lr_init=learning_rate,
         weight_decay=weight_decay,
         seed=config.seed,
-        t_max = 90,
+        t_max = 900,
         warmup_steps = 1000
     )
 
@@ -98,7 +98,7 @@ def train_and_eval(pipeline_directory, previous_pipeline_directory, weight_decay
     optimizer_list, _ = lightning_module.configure_optimizers()
     optimizer = optimizer_list[0]
 
-    checkpoint_name = "checkpoint_6.pth"
+    checkpoint_name = "checkpoint_9.pth"
 
     # Resume training if config has already been evaluated on lower budget
     if previous_pipeline_directory is not None:
@@ -186,7 +186,7 @@ def main(args):
         learning_rate=neps.FloatParameter(lower=1e-5, upper=1e-2, log=True),
         weight_decay=neps.FloatParameter(lower=1e-5, upper=1e-2, default=5e-4, log=True),
         dropout=neps.FloatParameter(lower=0, upper=1, default=0.2),
-        epochs=neps.IntegerParameter(lower=3, upper=90, is_fidelity=True)
+        epochs=neps.IntegerParameter(lower=3, upper=900, is_fidelity=True)
     )
 
     neps.run(
@@ -203,7 +203,7 @@ if __name__ == "__main__":
    
     parser = argparse.ArgumentParser()
     parser.add_argument("--results_dir", type=Path, default="neps_results", help="Directory to store neps run results in")
-    parser.add_argument("--max_budget", type=int, default=90, help="Maximum budget for neps run")
+    parser.add_argument("--max_budget", type=int, default=900, help="Maximum budget for neps run")
     args = parser.parse_args()
 
     main(args)

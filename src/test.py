@@ -182,16 +182,17 @@ if __name__ == '__main__':
     parser.add_argument("--loader_type", type=str, default="RPIDataset", help="Type of dataloader")
     parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers")
-    parser.add_argument("--rna_embeddings_path", type=str, default="data/embeddings/rpi2825/rna_embeddings.npy", help="Path to all RNA embeddings")
-    parser.add_argument("--protein_embeddings_path", type=str, default="data/embeddings/rpi2825/protein_embeddings.npy", help="Path to all protein embeddings")
-    parser.add_argument("--test_set_path", type=str, default="data/interactions/rpi2825_test_set.parquet", help="Path to the test set file")
+    # parser.add_argument("--rna_embeddings_path", default="data/embeddings/rnaclip8prots/rna_embeddings_lamar.npy", help="Path to RNA embeddings")
+    # parser.add_argument("--protein_embeddings_path", default="data/embeddings/rnaclip8prots/protein_embeddings.npy", help="Path to protein embeddings")
+    # parser.add_argument("--test_set_path", default="data/interactions/rnaclip8prots_test_rebalanced.parquet", help="Path to the test set file")
 
-    # parser.add_argument("--rna_embeddings_path", type=str, default="data/embeddings/rna_embeddings.npy", help="Path to all RNA embeddings")
-    # parser.add_argument("--protein_embeddings_path", type=str, default="data/embeddings/protein_embeddings.npy", help="Path to all protein embeddings")
-    # parser.add_argument("--test_set_path", type=str, default="data/interactions/test_set.parquet", help="Path to the test set file")
 
-    parser.add_argument("--checkpoint_path", type=str, default="/gpfs/bwfor/work/ws/fr_jg590-fr_jg590-restored/retrain_tr_s159072_25e/last-reproducing11_retrain_tr_s159072_25e, lr: 0.00039457092606005325,             wd: 0.0005081310266379466, dr: 0.16244020564524297, seed: 159072.ckpt", help="Path to model's checkpoint")
-    parser.add_argument("--device", type=str, default="cuda", help="Device to run the model on")
+    parser.add_argument("--protein_embeddings_path", default="data/embeddings/MeanPooledRnaclip8prots/protein_embeddings_MeanPooledRnaclip8prots.npy", help="Path to protein embeddings")
+    parser.add_argument("--rna_embeddings_path", default="data/embeddings/MeanPooledRnaclip8prots/rna_embeddings_lamar_MeanPooledRnaclip8prots.npy", help="Path to RNA embeddings")
+    parser.add_argument("--test_set_path", default="data/interactions/rnaclip8prots_test.parquet", help="Path to the test set file")         
+
+    parser.add_argument("--checkpoint_path", type=str, default="checkpoints/last-reproducing_retrain_rnaclip8prots_lamar_meanpooled, lr: 0.0002,             wd: 1e-05, dr: 0.3, seed: 824319.ckpt", help="Path to model's checkpoint")
+    parser.add_argument("--device", type=str, default="cpu", help="Device to run the model on")
 
     args = parser.parse_args()
 

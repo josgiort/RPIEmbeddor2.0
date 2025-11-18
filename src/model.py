@@ -65,6 +65,15 @@ class ModelWrapper(LightningModule):
 
     def training_step(self, batch, batch_idx):
         rna_embed, protein_embed, y, _ = batch
+
+        # Debug batch composition (remove after verification)
+        if batch_idx < 5:  # Only first 5 batches
+            unique_proteins = len(set([protein_embed[i].sum().item() for i in range(len(protein_embed))]))
+            print(f"Batch {batch_idx}: {unique_proteins} unique protein embeddings out of {len(protein_embed)}")
+        
+
+
+
         y = y.float()
         y_hat = self.forward(rna_embed, protein_embed)
         y_hat = y_hat.reshape(y_hat.shape[0])
@@ -219,7 +228,9 @@ class RNAProteinInterAct(Module):
 
         self.activation = torch.relu
 
-        self.linear_reduce_1 = Linear(embed_dim, d_model)
+        # Change to account for the new hidden dimension of RNA embedding from LAMAR
+        self.linear_reduce_1 = Linear(768, d_model)
+        # self.linear_reduce_1 = Linear(embed_dim, d_model)
         self.linear_reduce_2 = Linear(embed_dim, d_model)
 
         self.linear1 = Linear(d_model, d_model // 2, **factory_kwargs)
@@ -242,9 +253,9 @@ class RNAProteinInterAct(Module):
             raise RuntimeError("the batch number of src and tgt must be equal")
         elif self.batch_first and rna_embed.size(0) != protein_embed.size(0) and is_batched:
             raise RuntimeError("the batch number of src and tgt must be equal")
-
-        if protein_embed.size(-1) != self.embed_dim or rna_embed.size(-1) != self.embed_dim:
-            raise RuntimeError("the feature number of src and tgt must be equal to d_model")
+        # temporarily disabled to get gena_lm new embeddings running with the model
+        #if protein_embed.size(-1) != self.embed_dim or rna_embed.size(-1) != self.embed_dim:
+        #    raise RuntimeError("the feature number of src and tgt must be equal to d_model")
 
         rna_mask = None
         protein_mask = None
@@ -252,6 +263,8 @@ class RNAProteinInterAct(Module):
             rna_mask = rna_embed[:, :, 0] == 0.0
             protein_mask = protein_embed[:, :, 0] == 0.0
 
+
+        # A change to account for new hidden_dimension of gena_lm
         x_1 = self.activation(self.linear_reduce_1(rna_embed))
 
         x_2 = self.activation(self.linear_reduce_2(protein_embed))
@@ -607,6 +620,28 @@ class BaseCNN(Module):
         x = self.activation(self.linear1(x))        
         x = torch.sigmoid(self.linear2(x))
         return x.mean(dim=1)
+
+
+class SimpleRPI_FFN(Module):
+    def __init__(self, d_model=256, dropout=0.2):
+        super().__init__()
+        # Total input size: 768 (LAMAR) + 640 (ESM2) = 1408
+        self.linear_in = Linear(768 + 640, d_model) 
+        self.dropout = Dropout(dropout)
+        self.linear1 = Linear(d_model, d_model // 2)
+        self.linear2 = Linear(d_model // 2, 1)
+
+    def forward(self, rna_embed, protein_embed):
+        # rna_embed shape: (Batch, 768) ; protein_embed shape: (Batch, 640)
+
+        # Concatenate the two single vectors
+        x = torch.cat((rna_embed, protein_embed), dim=1) 
+
+        x = self.dropout(torch.relu(self.linear_in(x)))
+        x = torch.relu(self.linear1(x))
+        x = torch.sigmoid(self.linear2(x))
+
+        return x.squeeze(1) # Final shape (Batch,)
 
 
 def _get_clones(module, n):

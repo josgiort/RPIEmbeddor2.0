@@ -60,8 +60,8 @@ class RPIDataset(Dataset):
         return self.length
 
     def __getitem__(self, index):
-
-        # Get entry information
+        # import pudb; pudb.set_trace()
+        # Get entry information?????? ERROR???
         row = self.dataset[self.dataset['row_number'] == index][
             ['Sequence_1_emb_ID', 'Sequence_2_emb_ID', 'interaction', 'row_number']]
         assert row.shape[0] == 1
