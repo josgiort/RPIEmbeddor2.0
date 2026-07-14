@@ -4,7 +4,7 @@ Official implementation of **RPIEmbeddor**, a transformer-based framework for RN
 
 This repository accompanies the Master's thesis:
 
-> **RNA--Protein Interaction Prediction using Foundation Model Embeddings**
+> **Evaluating foundation model embeddings in RNA-Protein Interaction classification with RPIembeddor**
 
 ## Repository Structure
 
