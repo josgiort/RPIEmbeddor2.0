@@ -140,8 +140,8 @@ def main():
         interaction = "positive"
     else:
         interaction = "negative"
+    
     print(f"-----{interaction.upper()} INTERACTION-----")
-    print(f"INTERACTION PROBABILITY: {prediction}")
 
 
 def check_rna(seq: str):
