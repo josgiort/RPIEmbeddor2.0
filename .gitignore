@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Environments
+.venv/
+venv/
+env/
+.conda/
+
+# Data and embeddings
+data/embeddings/
+dataset/embeddings/
+*.npy
+*.npz
+*.parquet
+*.h5
+*.hdf5
+
+# Model artifacts
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+
+# Experiment logs
+wandb/
+lightning_logs/
+logs/
+neps_results/
+test_results/
+
+# Temporary files
+*.tmp
+*.tar
+*.tar.gz
+.DS_Store
