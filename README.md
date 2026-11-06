@@ -2,14 +2,14 @@
 
 Extension and benchmarking of **RPIembeddor**, a transformer-based model for RNA–protein interaction (RPI) prediction from frozen RNA and protein foundation-model embeddings.
 
-RPIembeddor was originally developed by [original authors / lab] ([paper](https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1), [original code]([link if available])). This repository contains the code used in my Master's thesis at the University of Freiburg:
+RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and Bioinformatics group from the University of Freiburg] ("RNA-Protein Interaction Classification via Sequence Embeddings"(https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1)). This repository contains the code used in my Master's thesis at the University of Freiburg:
 
 > **Evaluating foundation model embeddings in RNA-Protein Interaction classification with RPIembeddor**
 
 ## What this work adds
 
 - Reproduction of the original RPIembeddor results on RNAInterAct.
-- Evaluation on an eCLIP-based dataset (1.47M balanced RNA–protein pairs, 151-nt RNAs, 173 proteins) [constructed within the group; add reference].
+- Evaluation on an eCLIP-based dataset (1.47M balanced RNA–protein pairs, 151-nt RNAs, 173 proteins) [constructed within the group by Dr. Michael Uhl].
 - Benchmark of 12 protein × RNA foundation-model combinations (protein: ESM-2, ESM-C, LC-PLM, V-ESM; RNA: RNA-FM, LAMAR, RNAElectra) under identical training settings, across 2 datasets, 2 data splits and 3 seeds.
 - Baselines (logistic regression, MLP, CNN) and a one-hot-encoding ablation.
 
@@ -21,35 +21,6 @@ RPIembeddor was originally developed by [original authors / lab] ([paper](https:
 
 [Insert results table or figure from `figures/`]
 
-## Repository structure
-(keep your existing tree)
-
-## Installation
-(keep your existing section)
-
-## Data
-[RNAInterAct: link]. [eCLIP dataset: how to obtain / contact]. Embeddings, checkpoints and logs are not included due to size.
-(keep expected directory structure)
-
-## Usage
-1. Generate embeddings: `python scripts/embedding_generation/[script].py --[args]`
-2. Train: `python src/[train_script].py --[args]`
-3. Baselines: `python baselines/[script].py --[args]`
-4. Inference: `python src/inference.py`
-
-Experiments were run on [HPC cluster] with SLURM; example job script: `[path]`.
-
-## Citation
-If you use this repository, please cite the original RPIembeddor paper:
-[BibTeX]
-and the accompanying thesis:
-[BibTeX]
-
-## Acknowledgements
-[Supervisor, group, HPC resources]
-
-## License
-[License]
 ## Repository Structure
 
 ```text
@@ -86,6 +57,7 @@ pip install rna-fm
 ```
 
 ## Data
+[RNAInterAct: link]. [eCLIP dataset: how to obtain / contact]. Embeddings, checkpoints and logs are not included due to size.
 
 The datasets, pretrained embeddings, checkpoints, and experiment logs are not included because of their size and possible redistribution constraints.
 
@@ -99,6 +71,26 @@ data/
 ```
 
 The paths to these directories can be configured in the training and inference scripts.
+
+## Usage
+1. Generate embeddings: `python scripts/embedding_generation/[script].py --[args]`
+2. Train: `python src/[train_script].py --[args]`
+3. Baselines: `python baselines/[script].py --[args]`
+4. Inference: `python src/inference.py`
+
+Experiments were run on [HPC cluster] with SLURM; example job script: `[path]`.
+
+## Citation
+If you use this repository, please cite the original RPIembeddor paper:
+[BibTeX]
+
+## Acknowledgements
+[Supervisor, group, HPC resources]
+
+## License
+[License]
+
+
 
 ## Embedding Generation
 
