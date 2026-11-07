@@ -2,7 +2,7 @@
 
 This is not a new version but an extension and benchmarking of **RPIembeddor**, a transformer-based model for RNA–protein interaction (RPI) prediction from frozen RNA and protein foundation-model embeddings.
 
-RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and Bioinformatics group from the University of Freiburg]["RNA-Protein Interaction Classification via Sequence Embeddings"](https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1). This repository contains the code used in my Master's thesis at the University of Freiburg:
+RPIembeddor was originally developed by [Matus, Dominika; Runge, Frederic; Franke, Jörg K. H.; Gerne, Lars; Uhl, Michael; Hutter, Frank; Backofen, Rolf / Machine Learning Lab and Bioinformatics group from the University of Freiburg] - ["RNA-Protein Interaction Classification via Sequence Embeddings"](https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1). This repository contains the code used in my Master's thesis at the University of Freiburg:
 
 > **Evaluating foundation model embeddings in RNA-Protein Interaction classification with RPIembeddor**
 
