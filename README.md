@@ -26,6 +26,33 @@ The main steps necessary to reproduce this work are the following:
 
 <img src="figures/reproducibility_pipeline.drawio.png" width="400" />
 
+
+
+
+### Installation of original RNA and protein foundation model
+
+As an example on how to install a pair of foundation models, in fact the original pair from the paper of RPIembeddor, miniconda is recommended as follows: 
+
+Create the environment:
+
+```bash
+conda create -n rpi python=3.8 pip
+conda activate rpi
+pip install -r requirements.txt
+```
+
+Install ESM-2:
+
+```bash
+pip install git+https://github.com/facebookresearch/esm.git
+```
+
+Install RNA-FM:
+
+```bash
+pip install rna-fm
+```
+
 ## Main findings
 
 - The best foundation-model combination changed with dataset and split; some combinations outperformed the original ESM-2 + RNA-FM setup by roughly 0.02–0.03 AUROC/AUPR, but none won in every setting.
@@ -51,31 +78,6 @@ The main steps necessary to reproduce this work are the following:
 ├── data/
 └── requirements.txt
 ```
-
-## Installation
-
-Create the environment:
-
-```bash
-conda create -n rpi python=3.8 pip
-conda activate rpi
-pip install -r requirements.txt
-```
-
-Install ESM-2:
-
-```bash
-pip install git+https://github.com/facebookresearch/esm.git
-```
-
-Install RNA-FM:
-
-```bash
-pip install rna-fm
-```
-
-
-
 
 ## Inference
 
