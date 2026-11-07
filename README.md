@@ -86,9 +86,6 @@ The required Python packages are listed in `requirements.txt`. Note that this fi
 
 ## Citation
 
-If you use this repository, please cite the accompanying Master's thesis.
-If you use this repository, please cite the original RPIembeddor paper:
+If you use this repository, please cite the accompanying Master's thesis and the original RPIembeddor paper:
 https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1
 
-## License
-[License]
