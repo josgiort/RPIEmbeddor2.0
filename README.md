@@ -2,6 +2,11 @@
 
 This is not a new version but an extension and benchmarking of **RPIembeddor**, a transformer-based model for RNA–protein interaction (RPI) prediction from frozen RNA and protein foundation-model embeddings.
 
+RPIembeddor takes a pretrained embedding of one RNA sequence and one protein sequence (kept frozen), passes them through a transformer module, and outputs the probability that the two interact.
+
+![RPIembeddor architecture](figures/RPIembeddor working.png)
+*Figure 1. Overview of RPIembeddor: frozen RNA and protein embeddings are fed to a transformer module that outputs an interaction probability.*
+
 RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and Bioinformatics group from the University of Freiburg] ("RNA-Protein Interaction Classification via Sequence Embeddings"(https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1)). This repository contains the code used in my Master's thesis at the University of Freiburg:
 
 > **Evaluating foundation model embeddings in RNA-Protein Interaction classification with RPIembeddor**
