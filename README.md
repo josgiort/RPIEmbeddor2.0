@@ -20,7 +20,11 @@ RPIembeddor takes a pretrained embedding of one RNA sequence and one protein seq
 - Baselines (logistic regression, MLP, CNN) and a one-hot-encoding ablation.
 
 ## Reproduction of this work
-In order to get the same results, one would have to count with GPU resources. This work was done thanks to the HPC computing resources of "bwUniCluster3.0" and "bwForCluster Helix" of Baden-Württemberg, Germany.
+In order to reproduce the results in reasonable time, one would have to count with GPU resources. This work was done thanks to the HPC computing resources of "bwUniCluster3.0" and "bwForCluster Helix" of Baden-Württemberg, Germany.
+
+The main steps necessary to reproduce this work are the following:
+
+<img src="figures/reproducibility_pipeline.drawio.png" width="400" />
 
 ## Main findings
 
