@@ -8,7 +8,7 @@ RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and
 
 RPIembeddor takes a pretrained embedding of one RNA sequence and one protein sequence (kept frozen), passes them through a transformer module, and outputs the probability that the two interact.
 
-<img src="figures/RPIembeddor working.png" width="500" />
+<img src="figures/pipeline_RPIembeddor.png" width="400" />
 
 *Figure 1. Overview of RPIembeddor: frozen RNA and protein embeddings are fed to a transformer module that outputs an interaction probability.*
 
