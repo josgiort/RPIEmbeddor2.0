@@ -19,8 +19,12 @@ RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and
 - Unsupervised embedding-quality metrics were only partially predictive of downstream performance.
 - Replacing embeddings with one-hot encodings clearly reduced performance.
 
-<img src="figures/eclip2_protein_disjoint_auroc.png" width="200" />
-*Figure 1. mean AUROC over 3 seeds on the eCLIP data with a data split (train, val, test) of protein disjointness*
+<img src="figures/eclip2_protein_disjoint_auroc.png" width="500" />
+<img src="figures/eclip2_rna_disjoint_auroc.png" width="500" />
+<img src="figures/rnainteract_random_train_validation_auroc.png" width="500" />
+<img src="figures/rnainteract_rna_family_disjoint_auroc.png" width="500" />
+
+*Figures. Mean AUROC performances over 3 seeds on the 4 different data settings (2 different datasets and 2 different splits for each of them)*
 
 ## Repository Structure
 
