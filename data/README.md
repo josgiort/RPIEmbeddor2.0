@@ -1,12 +1,3 @@
 # Data
 
-The datasets and precomputed embeddings are not included in this repository because of their size and possible redistribution restrictions.
-
-The expected directory structure is:
-
-```text
-data/
-├── annotations/
-├── interactions/
-└── embeddings/
-```
+The precomputed embeddings are not included in this repository because of their size. If needed, the Foundation models should be installed as per their corresponding repos and then in the folder ```scripts``` embeddings can be extracted.
