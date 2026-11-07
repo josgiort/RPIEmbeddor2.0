@@ -54,8 +54,6 @@ pip install rna-fm
 
 ```
 
-
-
 ## Requirements
 
 The required Python packages are listed in `requirements.txt`. Note that this file contain the whole set o f packages used throughout the elaboration of the thesis, including all the foundation models dependencies. 
@@ -89,70 +87,8 @@ The required Python packages are listed in `requirements.txt`. Note that this fi
 ## Citation
 
 If you use this repository, please cite the accompanying Master's thesis.
-
-
-## Data
-[RNAInterAct: link]. [eCLIP dataset: how to obtain / contact]. Embeddings, checkpoints and logs are not included due to size.
-
-The datasets, pretrained embeddings, checkpoints, and experiment logs are not included because of their size and possible redistribution constraints.
-
-Expected directory structure:
-
-```text
-data/
-├── annotations/
-├── interactions/
-└── embeddings/
-```
-
-The paths to these directories can be configured in the training and inference scripts.
-
-## Usage
-1. Generate embeddings: `python scripts/embedding_generation/[script].py --[args]`
-2. Train: `python src/[train_script].py --[args]`
-3. Baselines: `python baselines/[script].py --[args]`
-4. Inference: `python src/inference.py`
-
-Experiments were run on [HPC cluster] with SLURM; example job script: `[path]`.
-
-## Citation
 If you use this repository, please cite the original RPIembeddor paper:
-[BibTeX]
-
-## Acknowledgements
-[Supervisor, group, HPC resources]
+https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1
 
 ## License
 [License]
-
-
-
-## Embedding Generation
-
-Scripts for generating RNA and protein embeddings are provided under:
-
-```text
-scripts/embedding_generation/
-```
-
-Supported representations include RNA-FM, ESM-2, ESM-C, LaMAR, LCPLM, and one-hot sequence representations.
-
-## Training
-
-Training scripts for the experiments reported in the thesis are available under:
-
-```text
-src/
-```
-
-These include experiments on eCLIP2 and RNAInterAct using RNA-disjoint, protein-disjoint, and random data splits, as well as frozen-embedding and one-hot ablations.
-
-## Baseline Models
-
-The repository contains the following baseline models:
-
-- Logistic Regression
-- Multi-Layer Perceptron (MLP)
-- Convolutional Neural Network (CNN)
-
-The baselines operate on mean-pooled RNA and protein foundation-model embeddings.
