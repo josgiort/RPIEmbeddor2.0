@@ -51,7 +51,14 @@ Install RNA-FM:
 
 ```bash
 pip install rna-fm
+
 ```
+
+
+
+## Requirements
+
+The required Python packages are listed in `requirements.txt`. Note that this file contain the whole set o f packages used throughout the elaboration of the thesis, including all the foundation models dependencies. 
 
 ## Main findings
 
@@ -78,30 +85,6 @@ pip install rna-fm
 ├── data/
 └── requirements.txt
 ```
-
-## Inference
-
-Inference can be performed with:
-
-```bash
-python src/inference.py
-```
-
-For protein sequences, the supported amino acid alphabet is:
-
-```text
-A R N D C Q E G H I L K M F P S T W Y V
-```
-
-For RNA sequences, the supported nucleotide alphabet is:
-
-```text
-A C G U
-```
-
-## Requirements
-
-The required Python packages are listed in `requirements.txt`.
 
 ## Citation
 
