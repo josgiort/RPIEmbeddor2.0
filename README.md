@@ -4,7 +4,7 @@ This is not a new version but an extension and benchmarking of **RPIembeddor**, 
 
 RPIembeddor takes a pretrained embedding of one RNA sequence and one protein sequence (kept frozen), passes them through a transformer module, and outputs the probability that the two interact.
 
-![RPIembeddor architecture](figures/RPIembeddor working.png)
+<img src="figures/RPIembeddor working.png" width="500" />
 *Figure 1. Overview of RPIembeddor: frozen RNA and protein embeddings are fed to a transformer module that outputs an interaction probability.*
 
 RPIembeddor was originally developed by [Matus et al. / Machine Learning Lab and Bioinformatics group from the University of Freiburg] ("RNA-Protein Interaction Classification via Sequence Embeddings"(https://www.biorxiv.org/content/10.1101/2024.11.08.622607v1)). This repository contains the code used in my Master's thesis at the University of Freiburg:
