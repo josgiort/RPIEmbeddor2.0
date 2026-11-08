@@ -13,7 +13,7 @@ RPIembeddor takes a pretrained embedding of one RNA sequence and one protein seq
 
 <img src="figures/pipeline_RPIembeddor.png" width="400" />
 
-*Figure 1. Overview of RPIembeddor: frozen RNA and protein embeddings are fed to a transformer module that outputs an interaction probability.*
+*Figure: Overview of RPIembeddor: frozen RNA and protein embeddings are fed to a transformer module that outputs an interaction probability.*
 
 ## What this work adds
 
