@@ -59,7 +59,7 @@ pip install rna-fm
 
 ## Requirements
 
-The required Python packages are listed in `requirements.txt`. Note that this file contain the whole set o f packages used throughout the elaboration of the thesis, including all the foundation models dependencies. 
+The required Python packages are listed in `requirements.txt`. Note that this file contain the whole set of packages used throughout the elaboration of the thesis, including all the foundation models dependencies. 
 
 ## Main findings
 
