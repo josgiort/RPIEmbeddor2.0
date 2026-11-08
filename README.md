@@ -17,7 +17,7 @@ RPIembeddor takes a pretrained embedding of one RNA sequence and one protein seq
 
 ## What this work adds
 
-- Reproduction of the original RPIembeddor results on RNAInterAct.
+- Reproduction of the original RPIembeddor results on RNAInterAct(original dataset created for RPIembeddor).
 - Evaluation on an eCLIP-based dataset (1.47M balanced RNA–protein pairs, 151-nt RNAs, 173 proteins) [constructed within the group by Dr. Michael Uhl].
 - Benchmark of 12 protein × RNA foundation-model combinations (protein: ESM-2, ESM-C, LC-PLM, V-ESM; RNA: RNA-FM, LAMAR, RNAElectra) under identical training settings, across 2 datasets, 2 data splits and 3 seeds.
 - Baselines (logistic regression, MLP, CNN) and a one-hot-encoding ablation.
